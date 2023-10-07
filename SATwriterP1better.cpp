@@ -5,8 +5,62 @@
 #include <time.h>
 #include<cstdlib>
 using namespace std;
-
+const string minisat_init = "minisat ";
 #define S(i,j) (size+2)*(i-1) + (j+1) + starting_index   //S(i,j) denotes if the sum of variables upto index i is greater than or equal to j
+void reconstructGraph(string inputfilename, int vertices, int clique1, int clique2, string outputfilename)
+{
+    ifstream ipfile;
+    ipfile.open(inputfilename, ios::in);
+    if (!ipfile) {
+        cout << "No such file\n";
+        ipfile.close();
+        exit( 0 );
+    }
+    ofstream outputfile(outputfilename);
+    if (!outputfile.is_open()) {
+        cerr << "Failed to open the file for writing." << std::endl;
+        exit(0);
+    }
+    string line;
+    getline(ipfile,line);
+    if(line=="UNSAT")
+    {
+        outputfile << "0 \n";
+        ipfile.close();
+        outputfile.close();
+        exit(0);
+    }
+    outputfile<<"#1\n";
+    getline(ipfile,line);
+    stringstream ss(line);
+    string token;
+    vector<int> clique;
+    while(getline(ss,token,' '))
+    {
+        if(token==to_string(2*vertices+1) ||  token=='-' + to_string(2*vertices+1))
+        {
+            break;
+        }
+        if(token[0]!='-' )
+        {
+            clique.push_back(stoll(token));
+        }
+    }
+    outputfile<<"#1\n";
+    for(int i=0; i<clique1; i++)
+    {
+        outputfile << clique[i] << " ";
+    }
+    outputfile << "\n";
+    outputfile<<"#2\n";
+    for(int i=clique1; i<clique1+clique2; i++)
+    {
+        outputfile << clique[i] - vertices << " ";
+    }
+    outputfile << "\n";
+    ipfile.close();
+    outputfile.close();
+}
 void ensure_clique(int vertices,int starting_index,int is_one,int size,vector<vector<pair<int,short>>>& clauses){
         vector<pair<int,short>> clause;
         clause.push_back(make_pair(is_one*vertices + 1,-1)); 
@@ -111,10 +165,37 @@ void get_edges(string inputfilename,int& vertices,int& edges,int& k1,int& k2,boo
             }   
             ipfile.close();
     }
-
+bool runMiniSAT(string inputFileName, string outputFileName)
+{
+    string command = minisat_init + inputFileName + " " + outputFileName;
+    system(command.c_str());
+    ifstream opfile;
+    opfile.open(outputFileName, ios::in);
+    if (!opfile) {
+        cout << "No such file\n";
+        opfile.close();
+        exit( 0 );
+    }
+    string line;
+    getline(opfile,line);
+    if(line == "UNSAT")
+    {
+        opfile.close();
+        return false;
+    }
+    opfile.close();
+    return true;
+}
 int main(int argc, char** argv){
     
     string inputfilename (argv[1]);
+    inputfilename+=".graph";
+    string outputfilename (argv[1]);
+    outputfilename+=".mapping";
+    string satinputfile(argv[1]);
+    satinputfile+=".satinput";
+    string satoutputfile(argv[1]);
+    satoutputfile+=".satoutput";
     int vertices;
     int edges;
     int k1;
@@ -182,7 +263,7 @@ int main(int argc, char** argv){
     //     cout << "\n";
     // }
 
-    ofstream outputfile("test.satinput");
+    ofstream outputfile(satinputfile);
     if (!outputfile.is_open()) {
         cerr << "Failed to open the file for writing." << std::endl;
         exit(0);
@@ -195,5 +276,7 @@ int main(int argc, char** argv){
         outputfile << "0\n";
     }
     outputfile.close();
+    runMiniSAT(satinputfile, satoutputfile);
+    reconstructGraph(satoutputfile, vertices, k1, k2, outputfilename);
     return 0;
 }
