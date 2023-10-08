@@ -237,7 +237,7 @@ int main(int argc, char** argv){
     }
 
    for(int i = 1;i <= vertices;i++)
-    {
+    {   int degree = 0;
         for(int j = i+1;j <= vertices;j++)
         {
             if (!data[i-1][j-1])
@@ -252,8 +252,39 @@ int main(int argc, char** argv){
                 clauses.push_back(clause);
                 clause.clear();
             }
+            else{
+                degree += 1;
+            }
         }
+    if (degree < min(k1-1,k2-1)){
+        vector<pair<int,short>> clause;
+        clause.push_back(make_pair((2*vertices)+i,1));
+        clause.clear();
+    }
     } 
+   for(int i = 1;i <= vertices;i++)
+    {   int degree = 0;
+        for(int j = 1;j <= vertices;j++)
+        {
+            if (data[i-1][j-1])
+            {   
+                degree += 1;
+            }
+        }
+    if (degree < min(k1-1,k2-1)){
+        vector<pair<int,short>> clause;
+        clause.push_back(make_pair((2*vertices)+i,1));
+        clauses.push_back(clause);
+        clause.clear();
+    }
+    } 
+
+
+
+
+
+
+
    ensure_clique(vertices,3*vertices,0,k1,clauses);
    ensure_clique(vertices,3*vertices+ vertices*(k1+2),1,k2,clauses);
     // for(int i = 0;i < clauses.size();i++){
