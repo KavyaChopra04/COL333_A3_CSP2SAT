@@ -30,7 +30,6 @@ void reconstructGraph(string inputfilename, int vertices, int clique1, int cliqu
         outputfile.close();
         exit(0);
     }
-    outputfile<<"#1\n";
     getline(ipfile,line);
     stringstream ss(line);
     string token;
@@ -47,16 +46,18 @@ void reconstructGraph(string inputfilename, int vertices, int clique1, int cliqu
         }
     }
     outputfile<<"#1\n";
-    for(int i=0; i<clique1; i++)
+    for(int i=0; i<clique1-1; i++)
     {
         outputfile << clique[i] << " ";
     }
+    outputfile<<clique[clique1-1];
     outputfile << "\n";
     outputfile<<"#2\n";
-    for(int i=clique1; i<clique1+clique2; i++)
+    for(int i=clique1; i<clique1+clique2-1; i++)
     {
         outputfile << clique[i] - vertices << " ";
     }
+    outputfile<<clique[clique1+clique2-1] - vertices;
     outputfile << "\n";
     ipfile.close();
     outputfile.close();
@@ -189,7 +190,7 @@ bool runMiniSAT(string inputFileName, string outputFileName)
 int main(int argc, char** argv){
     
     string inputfilename (argv[1]);
-    inputfilename+=".graph";
+    inputfilename+=".graphs";
     string outputfilename (argv[1]);
     outputfilename+=".mapping";
     string satinputfile(argv[1]);
@@ -307,7 +308,7 @@ int main(int argc, char** argv){
         outputfile << "0\n";
     }
     outputfile.close();
-    runMiniSAT(satinputfile, satoutputfile);
-    reconstructGraph(satoutputfile, vertices, k1, k2, outputfilename);
+    // runMiniSAT(satinputfile, satoutputfile);
+    // reconstructGraph(satoutputfile, vertices, k1, k2, outputfilename);
     return 0;
 }

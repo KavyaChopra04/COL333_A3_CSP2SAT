@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #define int long long
 using namespace std;
-const string minisat_init = "minisat ";
+const string minisat_init = "./minisat ";
 #define S(i,j) (size+2)*(i-1) + (j+1) + starting_index   //S(i,j) denotes if the sum of variables upto index i is greater than or equal to j. j may range from 0 to k+1 for our purposes, so this adds a total of (numVertices)*(k+2) to the size of the clauses
 void reconstructGraph(string inputfilename, int vertices, int cliqueSize, string outputfilename)
 {
@@ -42,10 +42,11 @@ void reconstructGraph(string inputfilename, int vertices, int cliqueSize, string
             clique.push_back(stoll(token.substr(1)));
         }
     }
-    for(int x: clique)
+    for(int i=0; i<clique.size()-1; i++)
     {
-        outputfile << x << " ";
+        outputfile << clique[i] << " ";
     }
+    outputfile << clique[clique.size()-1];
     outputfile << "\n";
     ipfile.close();
     outputfile.close();
@@ -182,7 +183,7 @@ int iterativeDeepening(int vertices, vector<vector<pair<int,bool>>>& clauses)
 signed main(int argc, char** argv){
     //I/O functions
     string inputfilename (argv[1]);
-    inputfilename+=".graph";
+    inputfilename+=".graphs";
     string outputfilename (argv[1]);
     outputfilename+=".mapping";
     string satinputfile(argv[1]);
