@@ -3,54 +3,6 @@
 using namespace std;
 const string minisat_init = "./minisat ";
 #define S(i,j) (size+2)*(i-1) + (j+1) + starting_index   //S(i,j) denotes if the sum of variables upto index i is greater than or equal to j. j may range from 0 to k+1 for our purposes, so this adds a total of (numVertices)*(k+2) to the size of the clauses
-void reconstructGraph(string inputfilename, int vertices, int cliqueSize, string outputfilename)
-{
-    ifstream ipfile;
-    ipfile.open(inputfilename, ios::in);
-    if (!ipfile) {
-        cout << "No such file\n";
-        ipfile.close();
-        exit( 0 );
-    }
-    ofstream outputfile(outputfilename);
-    if (!outputfile.is_open()) {
-        cerr << "Failed to open the file for writing." << std::endl;
-        exit(0);
-    }
-    string line;
-    getline(ipfile,line);
-    if(line=="UNSAT")
-    {
-        outputfile << "0 \n";
-        ipfile.close();
-        outputfile.close();
-        exit(0);
-    }
-    outputfile<<"#1\n";
-    getline(ipfile,line);
-    stringstream ss(line);
-    string token;
-    vector<int> clique;
-    while(getline(ss,token,' '))
-    {
-        if(token==to_string(vertices+1) ||  token=='-' + to_string(vertices+1))
-        {
-            break;
-        }
-        if(token[0]=='-' )
-        {
-            clique.push_back(stoll(token.substr(1)));
-        }
-    }
-    for(int i=0; i<clique.size()-1; i++)
-    {
-        outputfile << clique[i] << " ";
-    }
-    outputfile << clique[clique.size()-1];
-    outputfile << "\n";
-    ipfile.close();
-    outputfile.close();
-}
 void ensureClique(int vertices, int starting_index, int size, vector<vector<pair<int,bool>>>& clauses){
     //cout<<"currently running for "<<starting_index<<" "<<size<<"\n";
     vector<pair<int,bool>> clause;
@@ -158,9 +110,49 @@ bool runMiniSAT(string inputFileName, string outputFileName)
     opfile.close();
     return true;
 }
-int iterativeDeepening(int vertices, vector<vector<pair<int,bool>>>& clauses)
+string readMapping(string outputFileName)
+{
+    ifstream opfile;
+    opfile.open(outputFileName, ios::in);
+    if (!opfile) {
+        cout << "No such file\n";
+        opfile.close();
+        exit( 0 );
+    }
+    string line;
+    getline(opfile,line);
+    getline(opfile,line);
+    return line;
+    opfile.close();
+}
+string parseMapping(string line)
+{
+    stringstream ss(line);
+    string token;
+    vector<int> clique;
+    while(getline(ss,token,' '))
+    {
+        if(token=="0")
+        {
+            break;
+        }
+        if(token[0]!='-' )
+        {
+            clique.push_back(stoll(token));
+        }
+    }
+    string cliqueString = "#1\n";
+    for(int i=0; i<clique.size()-1; i++)
+    {
+        cliqueString += to_string(clique[i]) + " ";
+    }
+    cliqueString += to_string(clique[clique.size()-1]);
+    return cliqueString;
+}
+pair<int, string> iterativeDeepening(int vertices, vector<vector<pair<int,bool>>>& clauses)
 {
     vector<vector<pair<int,bool>>> originalClauseSet(clauses);
+    string readFile = "";
     int maxCliqueSize = 1;
     int maxCliqueSizeFound = 1;
     while(maxCliqueSizeFound<=vertices)
@@ -169,13 +161,45 @@ int iterativeDeepening(int vertices, vector<vector<pair<int,bool>>>& clauses)
         writeToFile(clauses, "part2input.txt", maxCliqueSizeFound, vertices);
         clauses = originalClauseSet;
         if(runMiniSAT("part2input.txt", "part2output.txt"))
-        {
+        {  
+            readFile = readMapping("part2output.txt");
             maxCliqueSize = maxCliqueSizeFound;
             maxCliqueSizeFound = maxCliqueSizeFound + 1;
         }
         else
         {
             break;
+        }
+    }
+    return make_pair(maxCliqueSize, readFile);
+}
+int binarySearchDeepening(int vertices, int edges, vector<vector<pair<int,bool>>>& clauses)
+{
+    vector<vector<pair<int,bool>>> originalClauseSet(clauses);
+    int maxCliqueSize = 1;
+    int maxCliqueSizeFound = 1;
+    int low = 1;
+    int high = vertices;
+    while(low<high)
+    {
+        int mid = low + (high - low + 1)/2;
+        cout<<"right now, mid is "<<mid<<" and num edges is "<<edges<<endl;
+        if(edges < (mid*(mid-1))/2)
+        {
+            high = mid - 1;
+            continue;
+        }
+        ensureClique(vertices,2*vertices,mid,clauses);
+        writeToFile(clauses, "part2input.txt", mid, vertices);
+        clauses = originalClauseSet;
+        if(runMiniSAT("part2input.txt", "part2output.txt"))
+        {
+            maxCliqueSize = mid;
+            low = mid;
+        }
+        else
+        {
+            high = mid - 1;
         }
     }
     return maxCliqueSize;
@@ -261,10 +285,10 @@ signed main(int argc, char** argv){
     /**
      * These were the constraints that would be uniform across all clique sizes. 
     */
-    int maxCliqueSize = iterativeDeepening(vertices, clauses);
+    pair<int, string> maxClique = iterativeDeepening(vertices, clauses);
     //cout << "Maximum Clique Size: " << maxCliqueSize << "\n";
-    ensureClique(vertices,2*vertices,maxCliqueSize,clauses);
-    writeToFile(clauses, satinputfile, maxCliqueSize, vertices);
-    runMiniSAT(satinputfile, satoutputfile);
-    reconstructGraph(satoutputfile, vertices, maxCliqueSize, outputfilename);
+    ensureClique(vertices,2*vertices,maxClique.first,clauses);
+    //writeToFile(clauses, satinputfile, maxClique.first, vertices);
+    //runMiniSAT(satinputfile, satoutputfile);
+    cout<<parseMapping(maxClique.second)<<"\n";
 }
