@@ -125,20 +125,20 @@ string readMapping(string outputFileName)
     return line;
     opfile.close();
 }
-string parseMapping(string line)
+void parseMapping(string line, string outputFile, int vertices)
 {
     stringstream ss(line);
     string token;
     vector<int> clique;
     while(getline(ss,token,' '))
     {
-        if(token=="0")
+        if(token=="0" || token=="-"+to_string(vertices+1) || token==to_string(vertices+1))
         {
             break;
         }
-        if(token[0]!='-' )
+        if(token[0]=='-' )
         {
-            clique.push_back(stoll(token));
+            clique.push_back(stoll(token.substr(1)));
         }
     }
     string cliqueString = "#1\n";
@@ -147,7 +147,9 @@ string parseMapping(string line)
         cliqueString += to_string(clique[i]) + " ";
     }
     cliqueString += to_string(clique[clique.size()-1]);
-    return cliqueString;
+    ofstream ofs(outputFile);
+    ofs<<cliqueString;
+    ofs.close();
 }
 pair<int, string> iterativeDeepening(int vertices, vector<vector<pair<int,bool>>>& clauses)
 {
@@ -290,5 +292,5 @@ signed main(int argc, char** argv){
     ensureClique(vertices,2*vertices,maxClique.first,clauses);
     //writeToFile(clauses, satinputfile, maxClique.first, vertices);
     //runMiniSAT(satinputfile, satoutputfile);
-    cout<<parseMapping(maxClique.second)<<"\n";
+    parseMapping(maxClique.second, outputfilename, vertices);
 }
