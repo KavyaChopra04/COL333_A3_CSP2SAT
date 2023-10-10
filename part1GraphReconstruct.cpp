@@ -79,7 +79,7 @@ void reconstructGraph(string inputfilename, int vertices, int clique1, int cliqu
 int main(int argc, char** argv)
 {
     string inputfilename (argv[1]);
-    inputfilename+=".graphs";
+    inputfilename+=".graph";
     string satoutputfile(argv[1]);
     satoutputfile+=".satoutput";
     string outputfilename (argv[1]);

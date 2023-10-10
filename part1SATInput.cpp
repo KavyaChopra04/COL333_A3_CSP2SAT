@@ -190,7 +190,7 @@ bool runMiniSAT(string inputFileName, string outputFileName)
 int main(int argc, char** argv){
     
     string inputfilename (argv[1]);
-    inputfilename+=".graphs";
+    inputfilename+=".graph";
     string outputfilename (argv[1]);
     outputfilename+=".mapping";
     string satinputfile(argv[1]);

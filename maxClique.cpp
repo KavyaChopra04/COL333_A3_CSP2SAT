@@ -1,5 +1,4 @@
 #include <bits/stdc++.h>
-#define int long long
 using namespace std;
 const string minisat_init = "./minisat ";
 #define S(i,j) (size+2)*(i-1) + (j+1) + starting_index   //S(i,j) denotes if the sum of variables upto index i is greater than or equal to j. j may range from 0 to k+1 for our purposes, so this adds a total of (numVertices)*(k+2) to the size of the clauses
@@ -122,8 +121,8 @@ string readMapping(string outputFileName)
     string line;
     getline(opfile,line);
     getline(opfile,line);
-    return line;
     opfile.close();
+    return line;
 }
 void parseMapping(string line, string outputFile, int vertices)
 {
@@ -206,10 +205,10 @@ int binarySearchDeepening(int vertices, int edges, vector<vector<pair<int,bool>>
     }
     return maxCliqueSize;
 }
-signed main(int argc, char** argv){
+int main(int argc, char** argv){
     //I/O functions
     string inputfilename (argv[1]);
-    inputfilename+=".graphs";
+    inputfilename+=".graph";
     string outputfilename (argv[1]);
     outputfilename+=".mapping";
     string satinputfile(argv[1]);
@@ -224,7 +223,7 @@ signed main(int argc, char** argv){
     if (!ipfile) {
         cout << "No such file\n";
         ipfile.close();
-        exit( 0 );
+        exit(0);
     }
     ipfile >> vertices;
     adjacencyList.resize(vertices+1);

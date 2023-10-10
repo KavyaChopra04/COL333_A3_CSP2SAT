@@ -11,5 +11,4 @@ clear:
 	rm -f *.satinput
 	rm -f *.satoutput
 	rm -f *.mapping
-	rm -f *.txt
 	
